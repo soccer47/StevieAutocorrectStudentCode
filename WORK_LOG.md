@@ -1,9 +1,9 @@
-Name: YOUR NAME HERE
+Name: Stevie K. Halprin
 
-| Date    |  Time  |                                     Update |
-|:--------|:------:|-------------------------------------------:|
-| April 5 | 9-10pm | I tried to write abstract, efficient code. |
-|         |        |                                            |
+| Date    |    Time    |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Update |
+|:--------|:----------:|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| March 5 | 7pm-7:40pm |                                                                                                                                                                                                       I thought for a while on how I would approach this problem set. As of right now I think I'll make 3 recursive methods, one for delete, one for swap, and one for add. I can then run them all on each other, with the base cases for all of them being hitting the threshold or finding a word in the dictionary. |
+| March 6 | 7:45pm-8pm | I spent a bit of time trying to implement my recursive approach above and realized that it would be pretty complicated to use the 3 recursive methods while also making my approach time and especially space efficient. I then thought about using a tree or TST instead (like for the problem set where we had to check if it existed in a dictionary or not). I think that I'll have to spend more time thinking about my approach, as this is starting to seem like a much more conceptually intricate problem set. |
 
 
 To add a new row to the table, click into a cell and then hit shift-enter.
