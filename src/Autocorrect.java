@@ -106,12 +106,12 @@ public class Autocorrect {
         ArrayList<String> add;
         ArrayList<String> swap;
 
-        // Add typed temporarily to posWords
-        posWords.put(typed, 0);
+        // Add typed to posWords
+        posWords.put(typed, -1);
 
         // While the threshold hasn't been reached run another round of edits to find possible altered versions of typed
-        for (String word : posWords.keySet()) {
-            for (int i = 0; i < editLimit; i++) {
+        for (int i = 0; i < editLimit; i++) {
+            for (String word : posWords.keySet()){
                 // Get the valid words possible from deleting a letter
                 delete = deleteLetter(typed);
                 for (String newWord : delete) {
@@ -119,6 +119,10 @@ public class Autocorrect {
                     if (!posWords.containsKey(word)) {
                         posWords.put(newWord, i);
                     }
+                }
+                // If three words have been found, return the top 3 recommended words
+                if (posWords.size() >= 4) {
+                    break;
                 }
                 // Get the valid words possible from adding a letter
                 add = addLetter(typed);
@@ -128,6 +132,10 @@ public class Autocorrect {
                         posWords.put(newWord, i);
                     }
                 }
+                // If three words have been found, return the top 3 recommended words
+                if (posWords.size() >= 4) {
+                    break;
+                }
                 // Get the valid words possible from swapping a letter
                 swap = swapLetter(typed);
                 for (String newWord : swap) {
@@ -136,14 +144,42 @@ public class Autocorrect {
                         posWords.put(newWord, i);
                     }
                 }
+                // If three words have been found, return the top 3 recommended words
+                if (posWords.size() >= 4) {
+                    break;
+                }
+            }
+            // If three words have been found, return the top 3 recommended words
+            if (posWords.size() >= 4) {
+                break;
             }
         }
 
-        // Remove the original misspelled word from the HashMap
-        posWords.remove(typed);
+        // Return empty array if no recommended words were found with the given threshold
+        if (posWords.isEmpty()) {
+            return new String[0];
+        }
 
+        // ArrayList to hold the 3 recommended words to be printed
+        ArrayList<String> finalThreeWords = new ArrayList<>();
+        // Integer representing current acceptable number of edits for words to possibly be returned
+        int editCount = 1;
 
-        return new String[0];
+        while (finalThreeWords.size() < 3) {
+            for (String key : posWords.keySet()) {
+                if (posWords.get(key) == editCount) {
+                    finalThreeWords.add(key);
+                }
+            }
+            editCount++;
+        }
+
+        // Return top 3 recommended replacement words
+        String[] lastThree = new String[3];
+        for (int i = 0; i < 3; i++) {
+            lastThree[i] = finalThreeWords.get(i);
+        }
+        return lastThree;
     }
 
 
