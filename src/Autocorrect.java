@@ -22,6 +22,8 @@ public class Autocorrect {
 
     // HashMap to hold dictionary of words
     public static HashMap<String, Boolean> dict;
+    // HashMap to hold possible words to be returned
+    public static HashMap<String, Integer> posWords;
     // Integer to represent threshold for edits to typed words
     public static int editLimit;
 
@@ -33,56 +35,9 @@ public class Autocorrect {
         }
         // Set editLimit equal to the inputted threshold
         editLimit = threshold;
+        // Initialize HashMap holding possible words
+        posWords = new HashMap<>();
 
-    }
-
-    // Recursive method for deleting letters
-    public ArrayList<String> deleteLetter(String word) {
-        // ArrayList to contain valid altered versions of the original word
-        ArrayList<String> validWords = new ArrayList<>();
-
-        for (int i = 0; i < word.length(); i++) {
-            String newWord = word.substring(0,i) + word.substring(i);
-            if (dict.containsKey(newWord)) {
-                validWords.add(newWord);
-            }
-        }
-        // Return the ArrayList of valid altered versions of the original word
-        return validWords;
-    }
-
-    // Recursive method for adding letters
-    public ArrayList<String> addLetter(String word) {
-        // ArrayList to contain valid altered versions of the original word
-        ArrayList<String> validWords = new ArrayList<>();
-        String newWord;
-        for (int i = 0; i < word.length(); i++) {
-            for (int j = 97; j <= 122; j++) {
-                newWord = word.substring(0, i) + j + word.substring(i);
-                if (dict.containsKey(newWord)) {
-                    validWords.add(newWord);
-                }
-            }
-        }
-        // Return the ArrayList of valid altered versions of the original word
-        return validWords;
-    }
-
-    // Recursive method for swapping letters
-    public ArrayList<String> swapLetter(String word) {
-        // ArrayList to contain valid altered versions of the original word
-        ArrayList<String> validWords = new ArrayList<>();
-        String newWord;
-        for (int i = 0; i < word.length(); i++) {
-            for (int j = 97; j <= 122; j++) {
-                newWord = word.substring(0,i) + j + word.substring(i + 1);
-                if (dict.containsKey(newWord)) {
-                    validWords.add(newWord);
-                }
-            }
-        }
-        // Return the ArrayList of valid altered versions of the original word
-        return validWords;
     }
 
     /**
@@ -96,90 +51,80 @@ public class Autocorrect {
         if (dict.containsKey(typed)) {
             return new String[0];
         }
-
-        // HashMap to contain possible valid versions of the misspelled word
-        // The keys are the words, and the values are the number of edits away from the original word
-        HashMap<String, Integer> posWords = new HashMap<>();
-
-        // ArrayLists to hold the various lists of possible edited versions of the typed word
-        ArrayList<String> delete;
-        ArrayList<String> add;
-        ArrayList<String> swap;
-
-        // Add typed to posWords
-        posWords.put(typed, -1);
-
-        // While the threshold hasn't been reached run another round of edits to find possible altered versions of typed
-        for (int i = 0; i < editLimit; i++) {
-            for (String word : posWords.keySet()){
-                // Get the valid words possible from deleting a letter
-                delete = deleteLetter(typed);
-                for (String newWord : delete) {
-                    // Make sure each possible altered word hasn't already been added to the HashMap before adding it
-                    if (!posWords.containsKey(word)) {
-                        posWords.put(newWord, i);
-                    }
-                }
-                // If three words have been found, return the top 3 recommended words
-                if (posWords.size() >= 4) {
-                    break;
-                }
-                // Get the valid words possible from adding a letter
-                add = addLetter(typed);
-                for (String newWord : add) {
-                    // Make sure each possible altered word hasn't already been added to the HashMap before adding it
-                    if (!posWords.containsKey(word)) {
-                        posWords.put(newWord, i);
-                    }
-                }
-                // If three words have been found, return the top 3 recommended words
-                if (posWords.size() >= 4) {
-                    break;
-                }
-                // Get the valid words possible from swapping a letter
-                swap = swapLetter(typed);
-                for (String newWord : swap) {
-                    // Make sure each possible altered word hasn't already been added to the HashMap before adding it
-                    if (!posWords.containsKey(word)) {
-                        posWords.put(newWord, i);
-                    }
-                }
-                // If three words have been found, return the top 3 recommended words
-                if (posWords.size() >= 4) {
-                    break;
-                }
-            }
-            // If three words have been found, return the top 3 recommended words
-            if (posWords.size() >= 4) {
-                break;
-            }
+        // Integer representing length of typed String
+        int length = typed.length();
+        // Add every word in the dictionary to posWords with the number of edits it takes to get to from the typed word
+        for (String key : dict.keySet()) {
+            // Put the dictionary word in posWords with the number of edits it took to get to from the typed word
+            // the number of edits is equal to the longest shared substring + difference in length of the Strings
+            posWords.put(key, key.length() - longestSharedSubstring(typed, key) + Math.abs(length - key.length()));
         }
 
-        // Return empty array if no recommended words were found with the given threshold
-        if (posWords.isEmpty()) {
-            return new String[0];
-        }
-
-        // ArrayList to hold the 3 recommended words to be printed
-        ArrayList<String> finalThreeWords = new ArrayList<>();
-        // Integer representing current acceptable number of edits for words to possibly be returned
-        int editCount = 1;
-
-        while (finalThreeWords.size() < 3) {
+        // ArrayList of (to be) ordered words to be returned
+        ArrayList<String> finalWords = new ArrayList<>();
+        // Add the words from posWords to the ArrayList with those requiring the fewest edits first
+        for (int i = 1; i < editLimit; i++) {
             for (String key : posWords.keySet()) {
-                if (posWords.get(key) == editCount) {
-                    finalThreeWords.add(key);
+                if (posWords.get(key) == i) {
+                    finalWords.add(key);
                 }
             }
-            editCount++;
+        }
+        // Return the recommended replacement words
+        return finalWords.toArray(new String[finalWords.size()]);
+    }
+
+    // Returns the length of the longest shared substring between two given words (using tabulation)
+    public static int longestSharedSubstring(String doc1, String doc2) {
+        // 2D array representing possible paths for substrings
+        int[][] path = new int[doc1.length()][doc2.length()];
+
+        // Holder integers to represent indexes to the left and above of the current index
+        int left;
+        int up;
+
+        // Iterate through the substring board bottom-up (tabulation approach)
+        for (int i = 0; i < doc1.length(); i++) {
+            for (int j = 0; j < doc2.length(); j++) {
+                // If the current letters of each doc match, set the current index to the upper-left diagonal index + 1
+                if (doc1.charAt(i) == doc2.charAt(j)) {
+                    // Make sure the upper left diagonal index exists
+                    if (i > 0 && j > 0) {
+                        path[i][j] = path[i - 1][j - 1] + 1;
+                    }
+                    // Otherwise set the current index to 1 (start of its own substring)
+                    else {
+                        path[i][j] = 1;
+                    }
+                }
+                // Otherwise take in the length of the longest substring that has previously been found within the
+                // current indexes of each of the docs on the board
+                else {
+                    // If there is a valid index above the current index, set 'up' to the index above
+                    if (i > 0) {
+                        up = path[i - 1][j];
+                    }
+                    // Otherwise set 'up' to 0
+                    else {
+                        up = 0;
+                    }
+                    // If there is a valid index to the left of the current index, set 'left' to the left index
+                    if (j > 0) {
+                        left = path[i][j - 1];
+                    }
+                    // Otherwise set 'left' to 0
+                    else {
+                        left = 0;
+                    }
+
+                    // Set the current index to the longer of the left and up indexes
+                    path[i][j] = Math.max(left, up);
+                }
+            }
         }
 
-        // Return top 3 recommended replacement words
-        String[] lastThree = new String[3];
-        for (int i = 0; i < 3; i++) {
-            lastThree[i] = finalThreeWords.get(i);
-        }
-        return lastThree;
+        // Return the length of the longest substring
+        return path[doc1.length() - 1][doc2.length() - 1];
     }
 
 
