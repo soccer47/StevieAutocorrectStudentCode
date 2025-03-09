@@ -28,7 +28,7 @@ public class Autocorrect {
     public static int editLimit;
 
     public Autocorrect(String[] words, int threshold) {
-        // Convert the dictionary to a HashMap
+        // Convert the dictionary to a HashMap for faster lookups
         dict = new HashMap<>();
         for (int i = 0; i < words.length; i++) {
             dict.put(words[i], false);
@@ -37,7 +37,6 @@ public class Autocorrect {
         editLimit = threshold;
         // Initialize HashMap holding possible words
         posWords = new HashMap<>();
-
     }
 
     /**
@@ -51,13 +50,11 @@ public class Autocorrect {
         if (dict.containsKey(typed)) {
             return new String[0];
         }
-        // Integer representing length of typed String
-        int length = typed.length();
+
         // Add every word in the dictionary to posWords with the number of edits it takes to get to from the typed word
         for (String key : dict.keySet()) {
             // Put the dictionary word in posWords with the number of edits it took to get to from the typed word
-            // the number of edits is equal to the longest shared substring + difference in length of the Strings
-            posWords.put(key, key.length() - longestSharedSubstring(typed, key) + Math.abs(length - key.length()));
+            posWords.put(key, diff(typed, key));
         }
 
         // ArrayList of (to be) ordered words to be returned
@@ -74,57 +71,54 @@ public class Autocorrect {
         return finalWords.toArray(new String[finalWords.size()]);
     }
 
-    // Returns the length of the longest shared substring between two given words (using tabulation)
-    public static int longestSharedSubstring(String doc1, String doc2) {
+    // Returns the minimum number of edits it would take to make one word match the other (using tabulation)
+    public static int diff(String word1, String word2) {
         // 2D array representing possible paths for substrings
-        int[][] path = new int[doc1.length()][doc2.length()];
+        int[][] path = new int[word1.length()][word2.length()];
 
         // Holder integers to represent indexes to the left and above of the current index
         int left;
         int up;
 
         // Iterate through the substring board bottom-up (tabulation approach)
-        for (int i = 0; i < doc1.length(); i++) {
-            for (int j = 0; j < doc2.length(); j++) {
-                // If the current letters of each doc match, set the current index to the upper-left diagonal index + 1
-                if (doc1.charAt(i) == doc2.charAt(j)) {
+        for (int i = 0; i < word1.length(); i++) {
+            for (int j = 0; j < word2.length(); j++) {
+                // If the current letters of each doc match, set the current index to the upper-left diagonal index
+                if (word1.charAt(i) == word2.charAt(j)) {
                     // Make sure the upper left diagonal index exists
                     if (i > 0 && j > 0) {
-                        path[i][j] = path[i - 1][j - 1] + 1;
+                        path[i][j] = path[i - 1][j - 1];
                     }
-                    // Otherwise set the current index to 1 (start of its own substring)
-                    else {
-                        path[i][j] = 1;
-                    }
+                    // Otherwise continue and set the current index to the lower of the left and up indexes
                 }
-                // Otherwise take in the length of the longest substring that has previously been found within the
-                // current indexes of each of the docs on the board
+                // Otherwise take in the substring path requiring the minimum number of edits within the current
+                // indexes of each of the docs on the board
                 else {
                     // If there is a valid index above the current index, set 'up' to the index above
                     if (i > 0) {
                         up = path[i - 1][j];
                     }
-                    // Otherwise set 'up' to 0
+                    // Otherwise set 'up' to j + 1
                     else {
-                        up = 0;
+                        up = j + 1;
                     }
                     // If there is a valid index to the left of the current index, set 'left' to the left index
                     if (j > 0) {
                         left = path[i][j - 1];
                     }
-                    // Otherwise set 'left' to 0
+                    // Otherwise set 'left' to i + 1
                     else {
-                        left = 0;
+                        left = i + 1;
                     }
 
-                    // Set the current index to the longer of the left and up indexes
-                    path[i][j] = Math.max(left, up);
+                    // Set the current index to one more than the lower of the left and up indexes
+                    path[i][j] = Math.min(left, up) + 1;
                 }
             }
         }
 
-        // Return the length of the longest substring
-        return path[doc1.length() - 1][doc2.length() - 1];
+        // Return the length of the substring path requiring the minimum number of edits
+        return path[word1.length() - 1][word2.length() - 1];
     }
 
 
