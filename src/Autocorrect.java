@@ -60,7 +60,7 @@ public class Autocorrect {
         // ArrayList of (to be) ordered words to be returned
         ArrayList<String> finalWords = new ArrayList<>();
         // Add the words from posWords to the ArrayList with those requiring the fewest edits first
-        for (int i = 1; i < editLimit; i++) {
+        for (int i = 1; i <= editLimit; i++) {
             for (String key : posWords.keySet()) {
                 if (posWords.get(key) == i) {
                     finalWords.add(key);
@@ -76,43 +76,48 @@ public class Autocorrect {
         // 2D array representing possible paths for substrings
         int[][] path = new int[word1.length()][word2.length()];
 
-        // Holder integers to represent indexes to the left and above of the current index
-        int left;
-        int up;
-
         // Iterate through the substring board bottom-up (tabulation approach)
         for (int i = 0; i < word1.length(); i++) {
             for (int j = 0; j < word2.length(); j++) {
-                // If the current letters of each doc match, set the current index to the upper-left diagonal index
+                // If current letters of the words match, set current index to upper-left diagonal index (if possible)
                 if (word1.charAt(i) == word2.charAt(j)) {
                     // Make sure the upper left diagonal index exists
                     if (i > 0 && j > 0) {
                         path[i][j] = path[i - 1][j - 1];
                     }
-                    // Otherwise continue and set the current index to the lower of the left and up indexes
+                    // If not, instead set the current index to the existing of the left or up indexes
+                    else {
+                        if (j > 0) {
+                            path[i][j] = path[i][j - 1];
+                        }
+                        else if (i > 0) {
+                            path[i][j] = path[i - 1][j];
+                        }
+                        // Otherwise (if both i and j are 0 and the current letters match) set the current index to 0
+                        else {
+                            path[i][j] = 0;
+                        }
+                    }
                 }
-                // Otherwise take in the substring path requiring the minimum number of edits within the current
-                // indexes of each of the docs on the board
+                // Otherwise if the letters don't match...
                 else {
-                    // If there is a valid index above the current index, set 'up' to the index above
-                    if (i > 0) {
-                        up = path[i - 1][j];
+                    // If the up-left diagonal index exists, set the current index to its value + 1
+                    if (i > 0 && j > 0) {
+                        path[i][j] = path[i - 1][j - 1] + 1;
                     }
-                    // Otherwise set 'up' to j + 1
+                    // Otherwise continue and set the current index to one more than the lower of the left or up indexes
                     else {
-                        up = j + 1;
+                        if (j > 0) {
+                            path[i][j] = path[i][j - 1] + 1;
+                        }
+                        else if (i > 0) {
+                            path[i][j] = path[i - 1][j] + 1;
+                        }
+                        // Otherwise (if i and j are 0 and the current letters don't match) set the current index to 1
+                        else {
+                            path[i][j] = 1;
+                        }
                     }
-                    // If there is a valid index to the left of the current index, set 'left' to the left index
-                    if (j > 0) {
-                        left = path[i][j - 1];
-                    }
-                    // Otherwise set 'left' to i + 1
-                    else {
-                        left = i + 1;
-                    }
-
-                    // Set the current index to one more than the lower of the left and up indexes
-                    path[i][j] = Math.min(left, up) + 1;
                 }
             }
         }
