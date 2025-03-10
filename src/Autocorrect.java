@@ -87,11 +87,23 @@ public class Autocorrect {
                     }
                     // If not, instead set the current index to the existing of the left or up indexes
                     else {
+                        // If the left index exists, set the current index to the left index
                         if (j > 0) {
                             path[i][j] = path[i][j - 1];
+                            // Make sure the current character hasn't already appeared in its given word
+                            if (word2.substring(0, j).contains(word2.charAt(j) + "")) {
+                                // If the current character is a repeat, add 1 to the current index
+                                path[i][j]++;
+                            }
                         }
+                        // Otherwise if the up index exists, set the current index to the up index
                         else if (i > 0) {
                             path[i][j] = path[i - 1][j];
+                            // Make sure the current character hasn't already appeared in its given word
+                            if (word1.substring(0, i).contains(word1.charAt(i) + "")) {
+                                // If the current character is a repeat, add 1 to the current index
+                                path[i][j]++;
+                            }
                         }
                         // Otherwise (if both i and j are 0 and the current letters match) set the current index to 0
                         else {
@@ -107,7 +119,7 @@ public class Autocorrect {
                         path[i][j] = Math.min(path[i][j - 1], path[i - 1][j]);
                         path[i][j] = Math.min(path[i][j], path[i - 1][j - 1]) + 1;
                     }
-                    // Otherwise continue and set the current index to one more than the lower of the left or up indexes
+                    // Otherwise set the current index to one more than the existing of the left or up indexes
                     else {
                         if (j > 0) {
                             path[i][j] = path[i][j - 1] + 1;
