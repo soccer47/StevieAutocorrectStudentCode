@@ -101,9 +101,11 @@ public class Autocorrect {
                 }
                 // Otherwise if the letters don't match...
                 else {
-                    // If the up-left diagonal index exists, set the current index to its value + 1
+                    // If the up-left diagonal index exists, set the current index to one more than
+                    // the lowest of the left, up, and up-left diagonal indexes
                     if (i > 0 && j > 0) {
-                        path[i][j] = path[i - 1][j - 1] + 1;
+                        path[i][j] = Math.min(path[i][j - 1], path[i - 1][j]);
+                        path[i][j] = Math.min(path[i][j], path[i - 1][j - 1]) + 1;
                     }
                     // Otherwise continue and set the current index to one more than the lower of the left or up indexes
                     else {
