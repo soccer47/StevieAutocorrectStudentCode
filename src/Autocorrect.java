@@ -20,10 +20,17 @@ public class Autocorrect {
      * @param threshold The maximum number of edits a suggestion can have.
      */
 
-    // HashMap to hold dictionary of words
-    public static HashMap<String, Boolean> dict;
-    // HashMap to hold possible words to be returned
-    public static HashMap<String, Integer> posWords;
+    public static void main(String[] args) {
+        // Create a new Autocorrect object
+        // Input a large dictionary that's loaded in, and a
+        Autocorrect auto = new Autocorrect(loadDictionary("large"), 3);
+
+
+        runTest();
+    }
+
+    // HashMap to hold dictionary of words, with value being minimum number of edits needed to get to typed word
+    public static HashMap<String, Integer> dict;
     // Integer to represent threshold for edits to typed words
     public static int editLimit;
 
@@ -31,12 +38,10 @@ public class Autocorrect {
         // Convert the dictionary to a HashMap for faster lookups
         dict = new HashMap<>();
         for (int i = 0; i < words.length; i++) {
-            dict.put(words[i], false);
+            dict.put(words[i], 0);
         }
         // Set editLimit equal to the inputted threshold
         editLimit = threshold;
-        // Initialize HashMap holding possible words
-        posWords = new HashMap<>();
     }
 
     /**
@@ -45,24 +50,30 @@ public class Autocorrect {
      * @return An array of all dictionary words with an edit distance less than or equal
      * to threshold, sorted by edit distnace, then sorted alphabetically.
      */
-    public String[] runTest(String typed) {
+    public static String[] runTest(String typed) {
         // If the typed word exists in the dictionary, return an empty array
         if (dict.containsKey(typed)) {
             return new String[0];
         }
 
-        // Add every word in the dictionary to posWords with the number of edits it takes to get to from the typed word
+        // Integer to hold length of typed word
+        int length = typed.length();
+        // Update the edit value of every word in the dictionary
         for (String key : dict.keySet()) {
-            // Put the dictionary word in posWords with the number of edits it took to get to from the typed word
-            posWords.put(key, diff(typed, key));
+            // Only add words that are within 3 of the typed word's length
+            if (!(key.length() > length + editLimit || key.length() < length - editLimit)) {
+                // Add the minimum number of edits it would take to convert typed to the dict word
+                dict.put(key, diff(typed, key));
+            }
         }
 
         // ArrayList of (to be) ordered words to be returned
         ArrayList<String> finalWords = new ArrayList<>();
-        // Add the words from posWords to the ArrayList with those requiring the fewest edits first
+        // Add the words from dict to the ArrayList with those requiring the fewest edits first
+        // Only add words that have an edit value below or equal to the threshold
         for (int i = 1; i <= editLimit; i++) {
-            for (String key : posWords.keySet()) {
-                if (posWords.get(key) == i) {
+            for (String key : dict.keySet()) {
+                if (dict.get(key) == i) {
                     finalWords.add(key);
                 }
             }
