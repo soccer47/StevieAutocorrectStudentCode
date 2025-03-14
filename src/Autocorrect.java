@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * Autocorrect
@@ -20,14 +21,15 @@ public class Autocorrect {
      * @param threshold The maximum number of edits a suggestion can have.
      */
 
-    public static void main(String[] args) {
-        // Create a new Autocorrect object
-        // Input a large dictionary that's loaded in, and a
-        Autocorrect auto = new Autocorrect(loadDictionary("large"), 3);
-
-
-        runTest();
-    }
+//    public static void main(String[] args) {
+//        // Create a new Autocorrect object
+//        // Input a large dictionary that's loaded in, and a
+//        Autocorrect auto = new Autocorrect(loadDictionary("large"), 3);
+//
+//        while(true) {
+//            auto.runTest(args[0]);
+//        }
+//    }
 
     // HashMap to hold dictionary of words, with value being minimum number of edits needed to get to typed word
     public static HashMap<String, Integer> dict;
@@ -50,7 +52,7 @@ public class Autocorrect {
      * @return An array of all dictionary words with an edit distance less than or equal
      * to threshold, sorted by edit distnace, then sorted alphabetically.
      */
-    public static String[] runTest(String typed) {
+    public String[] runTest(String typed) {
         // If the typed word exists in the dictionary, return an empty array
         if (dict.containsKey(typed)) {
             return new String[0];
@@ -63,17 +65,21 @@ public class Autocorrect {
             // Only add words that are within 3 of the typed word's length
             if (!(key.length() > length + editLimit || key.length() < length - editLimit)) {
                 // Add the minimum number of edits it would take to convert typed to the dict word
-                dict.put(key, diff(typed, key));
+                dict.put(key, editDistance(typed, key));
             }
         }
+
+        // THE WAY I MAKE THE FINAL LIST ALPHABETICALLY SORTED WAS MADE WITH THE HELP OF GEMINI, AN LLM
+        // Create a new TreeMap so keys can be sorted alphabetically
+        TreeMap<String, Integer> sortedMap = new TreeMap<>(dict);
 
         // ArrayList of (to be) ordered words to be returned
         ArrayList<String> finalWords = new ArrayList<>();
         // Add the words from dict to the ArrayList with those requiring the fewest edits first
         // Only add words that have an edit value below or equal to the threshold
         for (int i = 1; i <= editLimit; i++) {
-            for (String key : dict.keySet()) {
-                if (dict.get(key) == i) {
+            for (String key : sortedMap.keySet()) {
+                if (sortedMap.get(key) == i) {
                     finalWords.add(key);
                 }
             }
@@ -83,7 +89,7 @@ public class Autocorrect {
     }
 
     // Returns the minimum number of edits it would take to make one word match the other (using tabulation)
-    public static int diff(String word1, String word2) {
+    public static int editDistance(String word1, String word2) {
         // 2D array representing possible paths for substrings
         int[][] path = new int[word1.length()][word2.length()];
 
