@@ -1,10 +1,7 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Autocorrect
@@ -22,15 +19,36 @@ public class Autocorrect {
      * @param threshold The maximum number of edits a suggestion can have.
      */
 
-//    public static void main(String[] args) {
-//        // Create a new Autocorrect object
-//        // Input a large dictionary that's loaded in, and a
-//        Autocorrect auto = new Autocorrect(loadDictionary("large"), 3);
-//
-//        while(true) {
-//            auto.runTest(args[0]);
-//        }
-//    }
+    public static void main(String[] args) {
+        // Create a new Autocorrect object
+        // Input a large dictionary that's loaded in, and a
+        Autocorrect auto = new Autocorrect(loadDictionary("large"), 3);
+        // Run autocorrect
+        auto.run();
+    }
+
+    // Runner method for autocorrect
+    private void run() {
+        while (true) {
+            // Ask the user for input
+            System.out.print("Type a word here: ");
+            // Get input using scanner
+            Scanner s = new Scanner(System.in);
+            String typed = s.next();
+            // Do autocorrect
+            String[] closestWords = runTest(typed);
+            // If no close words were found, print "No matches found."
+            if (closestWords.length == 0) {
+                System.out.println("No matches found.");
+            }
+            // Otherwise print the top 3 recommended words
+            for (String word : closestWords) {
+                System.out.println(word);
+            }
+            System.out.println();
+        }
+    }
+
 
     // HashMap to hold dictionary of words, with value being minimum number of edits needed to get to typed word
     public static HashMap<String, Integer> dict;
@@ -54,9 +72,15 @@ public class Autocorrect {
      * to threshold, sorted by edit distnace, then sorted alphabetically.
      */
     public String[] runTest(String typed) {
+        // Reset the edit distance of the words in the dictionary
+        for (String key : dict.keySet()) {
+            dict.put(key, 0);
+        }
         // If the typed word exists in the dictionary, return an empty array
         if (dict.containsKey(typed)) {
-            return new String[0];
+            String[] finalReturn = new String[1];
+            finalReturn[0] = "This word already exists in the dictionary.";
+            return finalReturn;
         }
 
         // Integer to hold length of typed word
@@ -78,10 +102,16 @@ public class Autocorrect {
         ArrayList<String> finalWords = new ArrayList<>();
         // Add the words from dict to the ArrayList with those requiring the fewest edits first
         // Only add words that have an edit value below or equal to the threshold
+        // Only return the 3 closest words
         for (int i = 1; i <= editLimit; i++) {
             for (String key : sortedMap.keySet()) {
                 if (sortedMap.get(key) == i) {
                     finalWords.add(key);
+                }
+                // Make sure the number of words added to finalWords is less than 3 before continuing
+                if (finalWords.size() == 3) {
+                    // If not, return the top 3 recommended words
+                    return finalWords.toArray(new String[finalWords.size()]);
                 }
             }
         }
@@ -114,8 +144,8 @@ public class Autocorrect {
                 else {
                     // If the up-left diagonal index exists, set the current index to one more than
                     // the lowest of the left, up, and up-left diagonal indexes
-                    path[i][j] = Math.min(path[i][j - 1], path[i - 1][j]);
-                    path[i][j] = Math.min(path[i][j], path[i - 1][j - 1]) + 1;
+
+                    path[i][j] = Math.min(Math.min(path[i][j - 1], path[i - 1][j]), path[i - 1][j - 1]) + 1;
                 }
             }
         }
