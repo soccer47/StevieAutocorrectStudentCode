@@ -22,7 +22,7 @@ public class Autocorrect {
     public static void main(String[] args) {
         // Create a new Autocorrect object
         // Input a large dictionary that's loaded in, and a
-        Autocorrect auto = new Autocorrect(loadDictionary("large"), 3);
+        Autocorrect auto = new Autocorrect(loadDictionary("large"), 4);
         // Run autocorrect
         auto.run();
     }
@@ -91,7 +91,7 @@ public class Autocorrect {
             // Only add words that are within 3 of the typed word's length
             if (!(key.length() > length + editLimit || key.length() < length - editLimit)) {
                 // Take out all words that have a longest shared subsequence of length > typed.length() / 2
-                if (!(longestSharedSubstring(typed, key) < length / 2)) {
+                if (!(longestSharedSubstring(typed, key) < length * 3 / 4)) {
                     // Add the minimum number of edits it would take to convert typed to the dict word
                     dict.put(key, editDistance(typed, key));
                 }
@@ -148,7 +148,6 @@ public class Autocorrect {
                 else {
                     // If the up-left diagonal index exists, set the current index to one more than
                     // the lowest of the left, up, and up-left diagonal indexes
-
                     path[i][j] = Math.min(Math.min(path[i][j - 1], path[i - 1][j]), path[i - 1][j - 1]) + 1;
                 }
             }
