@@ -90,11 +90,8 @@ public class Autocorrect {
         for (String key : dict.keySet()) {
             // Only add words that are within 3 of the typed word's length
             if (!(key.length() > length + editLimit || key.length() < length - editLimit)) {
-                // Take out all words that have a longest shared subsequence of length > typed.length() / 2
-                if (!(longestSharedSubstring(typed, key) < length * 3 / 4)) {
-                    // Add the minimum number of edits it would take to convert typed to the dict word
-                    dict.put(key, editDistance(typed, key));
-                }
+                // Add the minimum number of edits it would take to convert typed to the dict word
+                dict.put(key, editDistance(typed, key));
             }
         }
 
@@ -157,64 +154,6 @@ public class Autocorrect {
         return path[word1.length()][word2.length()];
     }
 
-
-
-    // Returns the length of the longest shared substring
-    public static int longestSharedSubstring(String doc1, String doc2) {
-        // 2D array representing possible paths for substrings
-        int[][] path = new int[doc1.length()][doc2.length()];
-
-        // Holder integers to represent indexes to the left and above of the current index
-        int left;
-        int up;
-
-        // Iterate through the substring board bottom-up (tabulation approach)
-        for (int i = 0; i < doc1.length(); i++) {
-            for (int j = 0; j < doc2.length(); j++) {
-                // If the current letters of each doc match, set the current index to the upper-left diagonal index + 1
-                // Note- upper-left diagonal index represents longest substring within confines of current indexes of
-                // each of the docs, so current index should be 1 greater because matching leads to adding another
-                // letter (the current letter)
-                if (doc1.charAt(i) == doc2.charAt(j)) {
-                    // Make sure the upper left diagonal index exists
-                    if (i > 0 && j > 0) {
-                        path[i][j] = path[i - 1][j - 1] + 1;
-                    }
-                    // Otherwise set the current index to 1 (start of its own substring)
-                    else {
-                        path[i][j] = 1;
-                    }
-                }
-                // Otherwise take in the length of the longest substring that has previously been found within the
-                // current indexes of each of the docs on the board
-                else {
-                    // If there is a valid index above the current index, set 'up' to the index above
-                    if (i > 0) {
-                        up = path[i - 1][j];
-                    }
-                    // Otherwise set 'up' to an empty String
-                    else {
-                        up = 0;
-                    }
-                    // If there is a valid index to the left of the current index, set 'left' to the left index
-                    if (j > 0) {
-                        left = path[i][j - 1];
-                    }
-                    // Otherwise set 'left' to an empty String
-                    else {
-                        left = 0;
-                    }
-
-                    // Set the current index to the longer of the left and up indexes
-                    if (left > up) {path[i][j] = left;}
-                    else {path[i][j] = up;}
-                }
-            }
-        }
-
-        // Return the length of the longest shared substring
-        return path[doc1.length() - 1][doc2.length() - 1];
-    }
 
 
     /**
