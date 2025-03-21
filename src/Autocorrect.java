@@ -212,7 +212,7 @@ public class Autocorrect {
             }
         }
 
-        // Return the length of the longest substring
+        // Return the length of the longest shared substring
         return path[doc1.length() - 1][doc2.length() - 1];
     }
 

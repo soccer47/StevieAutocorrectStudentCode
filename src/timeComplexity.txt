@@ -1,0 +1,6 @@
+TIME COMPLEXITY OF COMPONENTS:
+loadDictionary >> linear time (proportional to size of dictionary)
+creating HashMap of dictionary >> linear time (proportional to size of dictionary)
+editDistance >> Linear time (product of length of typed and given dictionary word)
+longestSharedSubsequence >> Linear time (product of length of typed and given dictionary word)
+runTest >> O(dict length * (O(editDistance) + O(longestSharedSubsequence))) = O(dictLength * 2(editDistance * LSS))
