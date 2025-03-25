@@ -19,6 +19,15 @@ public class Autocorrect {
      * @param threshold The maximum number of edits a suggestion can have.
      */
 
+    // Constant representing length of longest word in dictionary
+    static final int LONGEST_LENGTH_WORD = 45;
+    // HashMap to hold dictionary of words, with value being minimum number of edits needed to get to typed word
+    public static HashMap<String, Integer> dict;
+    // Array of HashMaps to hold HashMap dictionaries for words of [index] length
+    HashMap<String, Integer>[] dicts;
+    // Integer to represent threshold for edits to typed words
+    public static int editLimit;
+
     public static void main(String[] args) {
         // Create a new Autocorrect object
         // Input a large dictionary that's loaded in, and a
@@ -49,17 +58,20 @@ public class Autocorrect {
         }
     }
 
-
-    // HashMap to hold dictionary of words, with value being minimum number of edits needed to get to typed word
-    public static HashMap<String, Integer> dict;
-    // Integer to represent threshold for edits to typed words
-    public static int editLimit;
-
     public Autocorrect(String[] words, int threshold) {
-        // Convert the dictionary to a HashMap for faster lookups
+        // Convert the dictionary to an array of HashMaps for faster lookups
+        // Make the HashMap at each index contain all the words of index length
+        dicts = new HashMap[LONGEST_LENGTH_WORD + 1];
+        for (int i = 0; i < LONGEST_LENGTH_WORD + 1; i++) {
+            dicts[i] = new HashMap<>();
+        }
+
+        // Initialize the dictionary to contain all valid words within the range of close lengths
         dict = new HashMap<>();
+
+        // Add each word to the correct HashMap
         for (int i = 0; i < words.length; i++) {
-            dict.put(words[i], 0);
+            dicts[words[i].length()].put(words[i], 0);
         }
         // Set editLimit equal to the inputted threshold
         editLimit = threshold;
@@ -72,10 +84,6 @@ public class Autocorrect {
      * to threshold, sorted by edit distnace, then sorted alphabetically.
      */
     public String[] runTest(String typed) {
-        // Reset the edit distance of the words in the dictionary
-        for (String key : dict.keySet()) {
-            dict.put(key, 0);
-        }
         // If the typed word exists in the dictionary, return an empty array
         if (dict.containsKey(typed)) {
             String[] finalReturn = new String[1];
@@ -83,16 +91,22 @@ public class Autocorrect {
             return finalReturn;
         }
 
-
         // Integer to hold length of typed word
         int length = typed.length();
+        // Reset the dictionary of words within the correct ranges of lengths
+        // Only add the dictionaries containing words of valid lengths
+        for (int i = length - editLimit; i <= length + editLimit; i++) {
+            // Add all words in the given dictionary
+            for (String key : dicts[i].keySet()) {
+                // Initialize the value/editDistance of the word to 0
+                dict.put(key, 0);
+            }
+        }
+
         // Update the edit value of every word in the dictionary
         for (String key : dict.keySet()) {
-            // Only add words that are within 3 of the typed word's length
-            if (!(key.length() > length + editLimit || key.length() < length - editLimit)) {
-                // Add the minimum number of edits it would take to convert typed to the dict word
-                dict.put(key, editDistance(typed, key));
-            }
+            // Add the minimum number of edits it would take to convert typed to the dict word
+            dict.put(key, editDistance(typed, key));
         }
 
         // THE WAY I MAKE THE FINAL LIST ALPHABETICALLY SORTED WAS MADE WITH THE HELP OF GEMINI, AN LLM

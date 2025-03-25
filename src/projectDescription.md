@@ -1,10 +1,12 @@
-After loading in the dictionary text file and converting all the words into a HashMap (for constant time lookups), 
-my Autocorrect method will then run the runTest() method. This method will first make sure that the typed word doesn't 
-exist in the dictionary (if the word is a valid word, an array of length 1 will be returned, containing the String 
-"This word already exists in the dictionary."). If the word doesn't exist in the dictionary, my method then proceeds to 
-traverse through every word in the dictionary, with two methods. For every dictionary word, I make sure that the
-dictionary word's length is within threshold distance (which I decided to set to 4 after trial and error testing) of the 
-typed word's length, and I subsequently run my edit distance algorithm.
+After loading in the dictionary text file, I convert all the words into an array of HashMaps, with each HashMap at a 
+given index in the array containing words of the same length as the index of the HashMap. Using HashMaps allows for 
+constant time lookups, and by grouping all the words by length I remove the need to filter each word by length
+redundantly in the future (if the user tries to run the runTest method multiple times). Next, my Autocorrect method will 
+then run the runTest() method. This method will first make sure that the typed word doesn't exist in the dictionary (if 
+the word is a valid word, an array of length 1 will be returned, containing the String "This word already exists in the 
+dictionary."). If the word doesn't exist in the dictionary, my method then proceeds to add every word in the 
+dictionaries containing words within [threshold] distance, leaving out all the words that are too long or short to be 
+considered valid options, and I subsequently run my edit distance algorithm.
 
 After the initial list of dictionary words has been shortened significantly, I then run the editDistance method on each 
 remaining word in the dictionary, and set these integer as the values in the dictionary HashMap for each word/key. The 
